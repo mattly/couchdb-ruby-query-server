@@ -1,35 +1,36 @@
 module CouchDB
-  class Map
-    def self.functions
+  module Map
+    extend self
+    
+    def functions
       @functions ||= []
     end
     
-    def self.add_function(func)
+    def add_function(func)
       #TODO: $SAFE this
-      func = <<-FUNC
-        CouchDB.log("evaling func")
-        #{func}
-      FUNC
       func = eval(func)
       functions.push(func)
       true
     end
     
-    def initialize(doc)
-      @doc = doc
-    end
-    
-    def run
-      self.class.functions.map do |func|
-        @map_results = []
-        instance_exec(@doc, &func)
-        @map_results
+    def run(doc)
+      functions.map do |func|
+        runner = Runner.new
+        runner.instance_exec(doc, &func)
+        runner.map_results
       end
     end
     
-    def emit(key, value)
-      @map_results ||=[]
-      @map_results.push([key, value])
+    class Runner
+      attr_reader :map_results
+      
+      def initialize
+        @map_results = []
+      end
+      
+      def emit(key, value)
+        @map_results.push([key, value])
+      end
     end
   end
 end

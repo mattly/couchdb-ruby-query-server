@@ -6,13 +6,14 @@ module CouchDB
     begin
       case command.shift
       when 'reset'
+        Map.functions.clear
         true
       when 'ddoc'
         Design.handle(command)
       when 'add_fun'
         Map.add_function(command.shift)
       when 'map_doc'
-        Map.new(command.shift).run
+        Map.run(command.shift)
       when 'reduce'
         func = command.shift.first
         vals = command.shift
@@ -26,6 +27,10 @@ module CouchDB
       end
     rescue => e
       # oops
+      File.open(File.dirname(__FILE__)+"/../test.log","a") do |f| 
+        f << "#{e.message}\n"
+        f << e.backtrace.join("\n") + "\n"
+      end
       false
     end
   end

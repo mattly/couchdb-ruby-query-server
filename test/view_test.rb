@@ -1,11 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 
-context "Ruby CouchDB View Server" do
-  
-  setup do
-    CouchDB.run(["reset"])
-  end
-  
+context "views" do
+    
   context "map functions" do
     setup do
       CouchDB::Map.functions.clear
@@ -20,6 +16,13 @@ context "Ruby CouchDB View Server" do
         [ ["baz", "b"] ]
       ]
       assert_equal expected, response
+    end
+    
+    test "are cleared on reset" do
+      CouchDB.run ["add_fun", "lambda{|doc| emit('foo', 'bar')}"]
+      assert_operator 0, :<=, CouchDB.run(['map_doc', {}]).size
+      assert CouchDB.run(['reset'])
+      assert_equal 0, CouchDB.run(['map_doc', {}]).size
     end
   end
   
