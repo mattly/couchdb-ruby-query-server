@@ -4,7 +4,7 @@ context "views" do
     
   context "map functions" do
     setup do
-      CouchDB::Map.functions.clear
+      CouchDB::View.reset
     end
     
     test "runs map functions" do
