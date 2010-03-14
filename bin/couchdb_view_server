@@ -9,6 +9,10 @@ rescue LoadError
   retry
 end
 
+if ARGV.include?("--safe")
+  CouchDB::Sandbox.safe = true
+end
+
 $stdin.each do |line|
   line = line.chomp
   

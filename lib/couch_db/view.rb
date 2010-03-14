@@ -6,9 +6,8 @@ module CouchDB
       @functions ||= []
     end
   
-    def add_map_function(func)
-      #TODO: $SAFE this
-      func = eval(func)
+    def add_map_function(funcstr)
+      func = Sandbox.make_proc(funcstr)
       map_functions.push(func)
       true
     end

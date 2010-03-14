@@ -1,4 +1,4 @@
-%w(design view).each {|mod| require "#{File.dirname(__FILE__)}/couch_db/#{mod}" }
+%w(design view sandbox).each {|mod| require "#{File.dirname(__FILE__)}/couch_db/#{mod}" }
 module CouchDB
   extend self
   

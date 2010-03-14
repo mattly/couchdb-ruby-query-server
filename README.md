@@ -33,8 +33,19 @@ Does not yet run on Ruby 1.8.6, as it requires `instance_exec`. Will most likely
 
 ## TODO
 
+* handle edge cases for map/reduce that aren't covered by the couchdb view server spec but indicated in the javascript view query server code.
 * Better Error Handling (for syntax errors, etc)
-* optional/default $SAFEing of the eval/run process, because user code can be scary.
 * Document Management Functions (update, validation)
 * Streaming Update Functions (filter)
 * Templating Functions (show, list)
+
+## Changelog
+
+### 0.1 2010-03-14
+* Offer a "safe" flag to provide a locked-down sandbox for user code inside $SAFE level 4.
+
+### 0.1pre 2 2010-03-13
+* Consolidate a lot of the "in-place, get it working" code for map/reduce to the View module.
+
+### 0.1pre 1 2010-03-07
+* Basic implementation of map/reduce working.
