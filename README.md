@@ -26,6 +26,13 @@ Your design documents should look something like this:
             }
         }
     }
+    
+If you are going to allow people you may not necessarily trust "admin-level" access to your CouchDB install, such that they may create design documents and therefore upload their own code, you may sandbox user code with the `--safe` flag like so:
+
+    [query_servers]
+    ruby = /path/to/ruby -- /path/to/bin/couchdb_view_server --safe
+    
+All code is eval'd and run under a `$SAFE` level of 4 in this mode.
 
 ## Notes
 
