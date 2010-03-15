@@ -28,16 +28,17 @@ end
 context "reduce functions" do
   setup do
     CouchDB::Sandbox.safe = true
-    @summing = "lambda{|k,vals,r| vals.inject(0){|sum,val| sum+=val } }"
+    @summing = "lambda{|k,vals,r| vals.inject(0){|sum,val| sum + val } }"
+    @concat  = "lambda{|k,vals,rereduce| rereduce ? vals.join('_') : vals.join(':') }"
   end
   
   test "runs reduce functions" do
-    response = CouchDB.run ["reduce", [@summing], (0...10).map{|i|[i,i*2]}]
-    assert_equal [true, [90]], response
+    response = CouchDB.run ["reduce", [@summing, @concat], (0...10).map{|i|[i,i*2]}]
+    assert_equal [true, [90, "0:2:4:6:8:10:12:14:16:18"]], response
   end
   
   test "runs re-reduce functions" do
-    response = CouchDB.run ["rereduce", [@summing], (0...10).map{|i|i}]
-    assert_equal [true, [45]], response
+    response = CouchDB.run ["rereduce", [@summing, @concat], (0...10).map{|i|i}]
+    assert_equal [true, [45, "0_1_2_3_4_5_6_7_8_9"]], response
   end
 end

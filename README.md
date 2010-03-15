@@ -48,6 +48,12 @@ Does not yet run on Ruby 1.8.6, as it requires `instance_exec`. Will most likely
 
 ## Changelog
 
+### 0.1.2 2010-03-14
+* fix for multiple reduce functions being run simultaneously
+
+### 0.1.1 2010-03-14
+* README updates, gem version bump
+
 ### 0.1 2010-03-14
 * Offer a "safe" flag to provide a locked-down sandbox for user code inside $SAFE level 4.
 

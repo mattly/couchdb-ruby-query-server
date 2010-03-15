@@ -37,18 +37,19 @@ module CouchDB
     end
         
     def reduce(functions, vals)
-      ## WHY .FIRST?????? WHY NOT ALL FROM FUNCTIONS????
-      func = functions.first
       keys = vals.map {|val| val.shift }
       vals = vals.map {|val| val.shift }
-      ret = eval(func).call(keys, vals, false)
-      [true, [ret]]
+      result = functions.map do |func|
+        Sandbox.make_proc(func).call(keys, vals, false)
+      end
+      [true, result]
     end
     
     def rereduce(functions, vals)
-      func = functions.first
-      ret = eval(func).call([], vals, true)
-      [true, [ret]]
+      result = functions.map do |func|
+        Sandbox.make_proc(func).call([], vals, true)
+      end
+      [true, result]
     end
     
   end
