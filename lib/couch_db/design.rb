@@ -21,6 +21,14 @@ module CouchDB
       end
     end
     
+    def updates(func, design_doc, command)
+      doc, request = command.shift
+      doc.untrust if doc.respond_to?(:untrust)
+      doc, response = func.call(doc, request)
+      response = {"body" => response} if response.kind_of?(String)
+      ["up", doc, response]  
+    end
+    
     def validate_doc_update(func, design_doc, command)
       new_doc, old_doc, user_ctx = command.shift
       runner = Runner.new(func)
