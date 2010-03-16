@@ -22,7 +22,9 @@ Your design documents should look something like this:
         "language": "ruby",
         "views": {
             "foos": {
-                "map": "lambda{|doc| emit(doc['foo'], nil) }"
+                "map": <<-RUBY
+                    lambda{|doc| emit(doc['foo'], nil) }
+                RUBY
             }
         }
     }
@@ -32,7 +34,7 @@ If you are going to allow people you may not necessarily trust "admin-level" acc
     [query_servers]
     ruby = /path/to/ruby -- /path/to/bin/couchdb_view_server --safe
     
-All code is eval'd and run under a `$SAFE` level of 4 in this mode.
+All code is eval'd and run under a `$SAFE` level of 4 in this mode. If running in safe mode, it is preferred to run under Ruby 1.9, which has a vastly improved "trust/untrusted" model for security of objects.
 
 ## Notes
 
@@ -47,6 +49,9 @@ Does not yet run on Ruby 1.8.6, as it requires `instance_exec`. Will most likely
 * Templating Functions (show, list)
 
 ## Changelog
+
+### HEAD
+* add support for `validate_doc_update` and `updates` functions.
 
 ### 0.1.2 2010-03-14
 * fix for multiple reduce functions being run simultaneously
