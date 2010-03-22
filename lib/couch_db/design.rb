@@ -21,6 +21,12 @@ module CouchDB
       end
     end
     
+    def filters(func, design_doc, docs_and_req)
+      docs, req = docs_and_req.first
+      results = docs.map{|doc| !! func.call(doc, req) }
+      [true, results]
+    end
+    
     def updates(func, design_doc, command)
       doc, request = command.shift
       doc.untrust if doc.respond_to?(:untrust)
