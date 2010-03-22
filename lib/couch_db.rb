@@ -3,8 +3,10 @@ module CouchDB
   extend self
   
   def run(command=[])
+    log(command)
     begin
-      case command.shift
+      cmd = command.shift
+      case cmd
       when 'reset'
         View.reset
         true
@@ -19,16 +21,16 @@ module CouchDB
       when 'rereduce'
         View.rereduce(command.shift, command.shift)
       else
+        # log("received unknown directive: [#{command.unshift(cmd).join(',')}]")
         false
       end
     rescue => e
-      # oops
-      File.open(File.dirname(__FILE__)+"/../test.log","a") do |f| 
-        f << "#{e.message}\n"
-        f << e.backtrace.join("\n") + "\n"
-      end
       false
     end
+  end
+  
+  def error(err, msg)
+    ["error", err, msg]
   end
   
 end

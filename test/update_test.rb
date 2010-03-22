@@ -20,9 +20,9 @@ context "document update functions" do
   
   # pending until i go back and add tests to the official view query server test
   #   ok, added a test to the view query server, passes in javascript fails in erlang. #wtf
-  # test "it disallows GET requests" do
-  #   expected = ["error", "method_not_allowed", "Update functions do not allow GET"]
-  #   assert_equal expected, run_update(:method => "GET")
-  # end
+  test "it disallows GET requests" do
+    expected = ["error", "method_not_allowed", "Update functions do not allow GET"]
+    assert_equal expected, run_update(:method => "GET")
+  end
   
 end

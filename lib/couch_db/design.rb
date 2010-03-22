@@ -24,9 +24,13 @@ module CouchDB
     def updates(func, design_doc, command)
       doc, request = command.shift
       doc.untrust if doc.respond_to?(:untrust)
-      doc, response = func.call(doc, request)
-      response = {"body" => response} if response.kind_of?(String)
-      ["up", doc, response]  
+      if request["method"] == "GET"
+        CouchDB.error "method_not_allowed", "Update functions do not allow GET"
+      else
+        doc, response = func.call(doc, request)
+        response = {"body" => response} if response.kind_of?(String)
+        ["up", doc, response]  
+      end
     end
     
     def validate_doc_update(func, design_doc, command)
