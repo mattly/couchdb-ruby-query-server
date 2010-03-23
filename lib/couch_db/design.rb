@@ -27,11 +27,22 @@ module CouchDB
       [true, results]
     end
     
+    def shows(func, design_doc, doc_and_req)
+      runner = Runner.new(func)
+      begin
+        response = runner.run(doc_and_req.first)
+        response = {"body" => response} if response.is_a?(String)
+        ["resp", response]
+      rescue Runner::HaltedFunction
+        runner.error
+      end
+    end
+    
     def updates(func, design_doc, command)
       doc, request = command.shift
       doc.untrust if doc.respond_to?(:untrust)
       if request["method"] == "GET"
-        CouchDB.error "method_not_allowed", "Update functions do not allow GET"
+        ["error", "method_not_allowed", "Update functions do not allow GET"]
       else
         doc, response = func.call(doc, request)
         response = {"body" => response} if response.kind_of?(String)
@@ -63,8 +74,12 @@ module CouchDB
         instance_exec *args, &func
       end
       
-      def throw(err, message)
-        @error = {err.to_s => message}
+      def throw(err, *message)
+        @error = if err == :error
+          ["error", message].flatten
+        else
+          {err.to_s => message.join(', ')}
+        end
         raise HaltedFunction
       end
     end
