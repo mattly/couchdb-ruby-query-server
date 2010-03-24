@@ -3,7 +3,6 @@ module CouchDB
   extend self
   
   def run(command=[])
-    log(command)
     begin
       cmd = command.shift
       case cmd
@@ -27,10 +26,6 @@ module CouchDB
     rescue => e
       false
     end
-  end
-  
-  def error(err, msg)
-    ["error", err, msg]
   end
   
 end
