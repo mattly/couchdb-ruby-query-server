@@ -22,7 +22,7 @@ module CouchDB
         View.rereduce(command.shift, command.shift)
       else
         # log("received unknown directive: [#{command.unshift(cmd).join(',')}]")
-        false
+        ["error", "unknown_command"]
       end
     rescue => e
       false

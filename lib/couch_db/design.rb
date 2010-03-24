@@ -1,5 +1,7 @@
 module CouchDB
   module Design
+    class HaltedFunction < StandardError; end
+
     extend self
     
     def documents
@@ -28,7 +30,12 @@ module CouchDB
     end
     
     def lists(func, design_doc, head_and_req)
-      ListRenderer.new(func).run(head_and_req)
+      l = ListRenderer.new(func)
+      begin
+        l.run(head_and_req)
+      rescue HaltedFunction => e
+        l.error
+      end
     end
     
     def shows(func, design_doc, doc_and_req)
@@ -37,7 +44,7 @@ module CouchDB
         response = runner.run(doc_and_req.first)
         response = {"body" => response} if response.is_a?(String)
         ["resp", response]
-      rescue Runner::HaltedFunction
+      rescue HaltedFunction
         runner.error
       end
     end
@@ -60,13 +67,20 @@ module CouchDB
       begin
         runner.run([new_doc, old_doc, user_ctx])
         1
-      rescue Runner::HaltedFunction
+      rescue HaltedFunction
         runner.error
       end
     end
     
+    def throw(err, *message)
+      if [:error, :fatal, "error", "fatal"].include?(err)
+        [:error, message].flatten
+      else
+        {err.to_s => message.join(', ')}
+      end
+    end
+    
     class Runner
-      class HaltedFunction < StandardError; end
       
       attr_accessor :error, :func
       
@@ -79,17 +93,13 @@ module CouchDB
       end
       
       def throw(err, *message)
-        @error = if err == :error
-          ["error", message].flatten
-        else
-          {err.to_s => message.join(', ')}
-        end
+        @error = Design.throw(err, *message)
         raise HaltedFunction
       end
     end
     
     class ListRenderer
-      attr_accessor :func
+      attr_accessor :func, :error
       def initialize(func)
         @func = func
       end
@@ -116,13 +126,20 @@ module CouchDB
         if ! @started
           @started = true
         end
-        cmd = JSON.parse $stdin.gets
-        case cmd.shift
+        row = JSON.parse $stdin.gets
+        case command = row.shift
         when "list_row"
-          cmd.first
+          row.first
         when "list_end"
           false
+        else
+          throw :fatal, "list_error", "not a row '#{command}'"
         end
+      end
+      
+      def throw(err, *message)
+        @error = Design.throw(err, *message)
+        raise HaltedFunction
       end
       
       def start(response)
@@ -133,7 +150,6 @@ module CouchDB
         response = if @started
           ["chunks", @chunks]
         else
-          CouchDB.log @start_response
           ["start", @chunks, @start_response]
         end
         $stdout.puts response.to_json
