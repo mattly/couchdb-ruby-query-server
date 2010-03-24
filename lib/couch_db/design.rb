@@ -1,5 +1,7 @@
 module CouchDB
   module Design
+    class HaltedFunction < StandardError; end
+
     extend self
     
     def documents
@@ -27,13 +29,22 @@ module CouchDB
       [true, results]
     end
     
+    def lists(func, design_doc, head_and_req)
+      l = ListRenderer.new(func)
+      begin
+        l.run(head_and_req)
+      rescue HaltedFunction => e
+        l.error
+      end
+    end
+    
     def shows(func, design_doc, doc_and_req)
       runner = Runner.new(func)
       begin
         response = runner.run(doc_and_req.first)
         response = {"body" => response} if response.is_a?(String)
         ["resp", response]
-      rescue Runner::HaltedFunction
+      rescue HaltedFunction
         runner.error
       end
     end
@@ -56,13 +67,20 @@ module CouchDB
       begin
         runner.run([new_doc, old_doc, user_ctx])
         1
-      rescue Runner::HaltedFunction
+      rescue HaltedFunction
         runner.error
       end
     end
     
+    def throw(err, *message)
+      if [:error, :fatal, "error", "fatal"].include?(err)
+        [:error, message].flatten
+      else
+        {err.to_s => message.join(', ')}
+      end
+    end
+    
     class Runner
-      class HaltedFunction < StandardError; end
       
       attr_accessor :error, :func
       
@@ -75,13 +93,70 @@ module CouchDB
       end
       
       def throw(err, *message)
-        @error = if err == :error
-          ["error", message].flatten
-        else
-          {err.to_s => message.join(', ')}
-        end
+        @error = Design.throw(err, *message)
         raise HaltedFunction
       end
+    end
+    
+    class ListRenderer
+      attr_accessor :func, :error
+      def initialize(func)
+        @func = func
+      end
+      
+      def run(head_and_req)
+        head, req = head_and_req.first
+        @started = false
+        @fetched_row = false
+        @start_response = {"headers" => {}}
+        @chunks = []
+        tail = instance_exec head, req, &func
+        get_row if ! @fetched_row
+        @chunks.push tail if tail
+        ["end", @chunks]
+      end
+      
+      def send(chunk)
+        @chunks << chunk
+      end
+      
+      def get_row()
+        @fetched_row = true
+        __flush_chunks
+        if ! @started
+          @started = true
+        end
+        row = JSON.parse $stdin.gets
+        case command = row.shift
+        when "list_row"
+          row.first
+        when "list_end"
+          false
+        else
+          throw :fatal, "list_error", "not a row '#{command}'"
+        end
+      end
+      
+      def throw(err, *message)
+        @error = Design.throw(err, *message)
+        raise HaltedFunction
+      end
+      
+      def start(response)
+        @start_response = response
+      end
+      
+      def __flush_chunks
+        response = if @started
+          ["chunks", @chunks]
+        else
+          ["start", @chunks, @start_response]
+        end
+        $stdout.puts response.to_json
+        $stdout.flush
+        @chunks.clear
+      end
+      
     end
     
   end
