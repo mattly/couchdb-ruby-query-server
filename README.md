@@ -42,16 +42,17 @@ Does not yet run on Ruby 1.8.6, as it requires `instance_exec`. Will most likely
 
 ## TODO
 
-* handle edge cases for map/reduce that aren't covered by the couchdb view server spec but indicated in the javascript view query server code.
-* Better Error Handling (for syntax errors, etc)
-* Document Management Functions (update, validation)
-* Streaming Update Functions (filter)
-* Templating Functions (show, list)
+* Better Error Handling for syntax errors, etc
+* More robust implementation of all the functions; currently we pass CouchDB's `query_server_spec` but there are lots of responsibilities of the Javascript query server that are not tested.
+* implement `log` inside functions.
+* implement some sort of proper template system for show/list. Will likely go with Mustache.
+* beef up safe mode support by redefining Kernel#sleep to raise.
+* get working on ruby 1.8.6
 
 ## Changelog
 
-### HEAD
-* add support for `validate_doc_update` and `updates` functions.
+### 0.2.0 2010-03-25
+* round out support for all function types, including `validate_doc_update`, `update`, `show` and `list`.
 
 ### 0.1.2 2010-03-14
 * fix for multiple reduce functions being run simultaneously
