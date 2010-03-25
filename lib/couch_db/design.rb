@@ -74,7 +74,7 @@ module CouchDB
     
     def throw(err, *message)
       if [:error, :fatal, "error", "fatal"].include?(err)
-        [:error, message].flatten
+        ["error", message].flatten
       else
         {err.to_s => message.join(', ')}
       end
