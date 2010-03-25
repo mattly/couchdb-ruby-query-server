@@ -22,9 +22,7 @@ Your design documents should look something like this:
         "language": "ruby",
         "views": {
             "foos": {
-                "map": <<-RUBY
-                    lambda{|doc| emit(doc['foo'], nil) }
-                RUBY
+                "map": "lambda{|doc| emit(doc['foo'], nil) }"
             }
         }
     }
