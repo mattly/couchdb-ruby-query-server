@@ -126,7 +126,7 @@ module CouchDB
         if ! @started
           @started = true
         end
-        row = JSON.parse $stdin.gets
+        row = CouchDB.read
         case command = row.shift
         when "list_row"
           row.first
@@ -148,12 +148,11 @@ module CouchDB
       
       def __flush_chunks
         response = if @started
-          ["chunks", @chunks]
+          ["chunks", @chunks.dup]
         else
-          ["start", @chunks, @start_response]
+          ["start", @chunks.dup, @start_response]
         end
-        $stdout.puts response.to_json
-        $stdout.flush
+        CouchDB.write response
         @chunks.clear
       end
       

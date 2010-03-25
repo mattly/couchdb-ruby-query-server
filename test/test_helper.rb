@@ -24,3 +24,7 @@ def context(*args, &block)
   (class << klass; self end).send(:define_method, :name) { name.gsub(/\W/,'_') }
   klass.class_eval &block
 end
+
+def create_ddoc(name, ddoc)
+  CouchDB.run(["ddoc", "new", name, ddoc])
+end

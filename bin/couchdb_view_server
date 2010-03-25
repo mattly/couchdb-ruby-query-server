@@ -13,10 +13,4 @@ if ARGV.include?("--safe")
   CouchDB::Sandbox.safe = true
 end
 
-$stdin.each do |line|
-  line = line.chomp
-  
-  return_value = CouchDB.run JSON.parse(line)
-  STDOUT.puts return_value.to_json
-  STDOUT.flush
-end
+CouchDB.loop
