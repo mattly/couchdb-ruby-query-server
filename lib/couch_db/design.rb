@@ -30,22 +30,16 @@ module CouchDB
     end
     
     def lists(func, design_doc, head_and_req)
-      l = ListRenderer.new(func)
-      begin
-        l.run(head_and_req)
-      rescue HaltedFunction => e
-        l.error
-      end
+      ListRenderer.new(func).run(head_and_req)
     end
     
     def shows(func, design_doc, doc_and_req)
-      runner = Runner.new(func)
-      begin
-        response = runner.run(doc_and_req.first)
+      response = CouchDB::Runner.new(func).run(*doc_and_req.first)
+      if response.respond_to?(:first) && response.first == "error"
+        response
+      else
         response = {"body" => response} if response.is_a?(String)
         ["resp", response]
-      rescue HaltedFunction
-        runner.error
       end
     end
     
@@ -55,7 +49,7 @@ module CouchDB
       if request["method"] == "GET"
         ["error", "method_not_allowed", "Update functions do not allow GET"]
       else
-        doc, response = func.call(doc, request)
+        doc, response = CouchDB::Runner.new(func).run(doc, request)
         response = {"body" => response} if response.kind_of?(String)
         ["up", doc, response]  
       end
@@ -63,12 +57,11 @@ module CouchDB
     
     def validate_doc_update(func, design_doc, command)
       new_doc, old_doc, user_ctx = command.shift
-      runner = Runner.new(func)
-      begin
-        runner.run([new_doc, old_doc, user_ctx])
+      response = CouchDB::Runner.new(func).run(new_doc, old_doc, user_ctx)
+      if response.respond_to?(:has_key?) && response.has_key?("forbidden")
+        response
+      else
         1
-      rescue HaltedFunction
-        runner.error
       end
     end
     
@@ -80,29 +73,7 @@ module CouchDB
       end
     end
     
-    class Runner
-      
-      attr_accessor :error, :func
-      
-      def initialize(func)
-        @func = func
-      end
-      
-      def run(args)
-        instance_exec *args, &func
-      end
-      
-      def throw(err, *message)
-        @error = Design.throw(err, *message)
-        raise HaltedFunction
-      end
-    end
-    
-    class ListRenderer
-      attr_accessor :func, :error
-      def initialize(func)
-        @func = func
-      end
+    class ListRenderer < CouchDB::Runner
       
       def run(head_and_req)
         head, req = head_and_req.first
@@ -110,7 +81,7 @@ module CouchDB
         @fetched_row = false
         @start_response = {"headers" => {}}
         @chunks = []
-        tail = instance_exec head, req, &func
+        tail = super(head, req)
         get_row if ! @fetched_row
         @chunks.push tail if tail
         ["end", @chunks]
@@ -135,11 +106,6 @@ module CouchDB
         else
           throw :fatal, "list_error", "not a row '#{command}'"
         end
-      end
-      
-      def throw(err, *message)
-        @error = Design.throw(err, *message)
-        raise HaltedFunction
       end
       
       def start(response)

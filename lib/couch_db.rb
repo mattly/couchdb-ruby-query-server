@@ -1,4 +1,4 @@
-%w(design view sandbox).each {|mod| require "#{File.dirname(__FILE__)}/couch_db/#{mod}" }
+%w(runner design view sandbox).each {|mod| require "#{File.dirname(__FILE__)}/couch_db/#{mod}" }
 require 'json'
 
 module CouchDB

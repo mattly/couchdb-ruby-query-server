@@ -19,11 +19,12 @@ context "reading functions" do
     assert_equal 6, ret.call(3)
   end
   
-  test "it raises an error if the code does not return a proc" do
+  test "it returns an error if the code does not return a proc" do
     str = "bar = 2"
-    assert_raises ArgumentError do
-      CouchDB::Sandbox.make_proc(str)
-    end
+    response = CouchDB::Sandbox.make_proc(str)
+    assert_kind_of response, Array
+    assert_equal response.shift, 'error'
+    assert_equal response.shift, 'compilation_error'
   end
 end
 

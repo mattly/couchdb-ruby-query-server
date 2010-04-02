@@ -11,8 +11,14 @@ module CouchDB
     end
     
     def make_proc(string)
-      value = run(string)
-      raise ArgumentError, "did not return a Proc" unless value.is_a?(Proc)
+      begin
+        value = run(string)
+        unless value.is_a?(Proc)
+          value = ["error", "compilation_error", "expression does not eval to a proc: #{string}"]
+        end
+      rescue SyntaxError => e
+        value = ["error", "compilation_error", "#{e.class.name}: #{e.message}"]
+      end
       value
     end
     

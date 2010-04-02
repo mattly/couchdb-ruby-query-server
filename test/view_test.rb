@@ -1,6 +1,31 @@
 require File.dirname(__FILE__) + '/test_helper'
 
-context "map functions" do
+context "adding map functions" do
+  setup do
+    CouchDB::Sandbox.safe = true
+    CouchDB::View.reset
+  end
+
+  test "compiles functions correctly" do
+    response = CouchDB.run(["add_fun", "lambda {|doc| emit(nil, nil)}"])
+    assert_equal true, response
+    assert_equal 1, CouchDB::View.map_functions.size
+    assert_kind_of Proc, CouchDB::View.map_functions.first
+  end
+  
+  test "errors on non-valid source" do
+    response = CouchDB.run(["add_fun", "lambda {"])
+    assert_equal response, ['error', 'compilation_error', %"SyntaxError: (eval):1: syntax error, unexpected $end\nlambda {\n        ^"] 
+  end
+
+  test "errors when expression does not eval to a proc" do
+    response = CouchDB.run(["add_fun", "3"])
+    assert_equal response, ['error', 'compilation_error', "expression does not eval to a proc: 3"]
+  end
+
+end
+
+context "running map functions" do
   setup do
     CouchDB::Sandbox.safe = true
     CouchDB::View.reset

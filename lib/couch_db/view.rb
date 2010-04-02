@@ -7,9 +7,13 @@ module CouchDB
     end
   
     def add_map_function(funcstr)
-      func = Sandbox.make_proc(funcstr)
-      map_functions.push(func)
-      true
+      response = Sandbox.make_proc(funcstr)
+      if response.is_a?(Proc)
+        map_functions.push(response)
+        true
+      else
+        response
+      end
     end
     
     def reset
@@ -18,17 +22,19 @@ module CouchDB
   
     def map(doc)
       map_functions.map do |func|
-        runner = MapRunner.new
-        runner.instance_exec(doc, &func)
-        runner.results
+        MapRunner.new(func).run(doc)
+        # runner = MapRunner.new
+        # runner.instance_exec(doc, &func)
+        # runner.results
       end
     end
   
-    class MapRunner
+    class MapRunner < CouchDB::Runner
       attr_reader :results
     
-      def initialize
+      def initialize(*args)
         @results = []
+        super(*args)
       end
     
       def emit(key, value)
