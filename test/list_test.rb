@@ -26,6 +26,14 @@ context "basic list functions" do
         "</ul>"
       }
     RUBY
+    @send_last = <<-RUBY
+      lambda do |head, req|
+        send "one"
+        get_row
+        send "two"
+        send "three"
+      end
+    RUBY
     @two_items = <<-RUBY
       lambda{|head, req|
         send "<ul>"
@@ -42,6 +50,7 @@ context "basic list functions" do
     create_ddoc "test", {"lists" => {
       "entire" => @entire_list, 
       "two" => @two_items, 
+      "send_last" => @send_last, 
       "headers" => @header_sender
     }}
     ListTest.reads.push ["list_row", {"count"=>"one"}]
@@ -64,6 +73,12 @@ context "basic list functions" do
     assert_equal ["start", ["<ul>"], {"headers"=>{}}], ListTest.writes.shift
     assert_equal ["chunks", ["<li>one</li>"]], ListTest.writes.shift
     assert_equal ["end", ["<li>two</li>", "</ul>"]], tail
+  end
+  
+  test "it will not crash with sending last" do
+    tail = CouchDB.run(['ddoc', 'test', ['lists', 'send_last'], [{}, {}]])
+    assert_equal ["start", ["one"], {"headers"=>{}}], ListTest.writes.shift
+    assert_equal ["end", ["two", "three"]], tail
   end
   
   test "it will send headers" do

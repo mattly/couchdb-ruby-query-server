@@ -89,6 +89,7 @@ module CouchDB
       
       def send(chunk)
         @chunks << chunk
+        false
       end
       
       def get_row()
