@@ -5,8 +5,9 @@ module CouchDB
 
     attr_accessor :error
 
-    def initialize(func)
+    def initialize(func, design_doc = {})
       @func = func
+      @design_doc = design_doc
     end
 
     def run(*args)

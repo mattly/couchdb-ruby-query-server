@@ -30,11 +30,11 @@ module CouchDB
     end
     
     def lists(func, design_doc, head_and_req)
-      ListRenderer.new(func).run(head_and_req)
+      ListRenderer.new(func, design_doc).run(head_and_req)
     end
     
     def shows(func, design_doc, doc_and_req)
-      response = CouchDB::Runner.new(func).run(*doc_and_req.first)
+      response = CouchDB::Runner.new(func, design_doc).run(*doc_and_req.first)
       if response.respond_to?(:first) && response.first == "error"
         response
       else
@@ -49,7 +49,7 @@ module CouchDB
       if request["method"] == "GET"
         ["error", "method_not_allowed", "Update functions do not allow GET"]
       else
-        doc, response = CouchDB::Runner.new(func).run(doc, request)
+        doc, response = CouchDB::Runner.new(func, design_doc).run(doc, request)
         response = {"body" => response} if response.kind_of?(String)
         ["up", doc, response]  
       end
@@ -57,7 +57,7 @@ module CouchDB
     
     def validate_doc_update(func, design_doc, command)
       new_doc, old_doc, user_ctx = command.shift
-      response = CouchDB::Runner.new(func).run(new_doc, old_doc, user_ctx)
+      response = CouchDB::Runner.new(func, design_doc).run(new_doc, old_doc, user_ctx)
       if response.respond_to?(:has_key?) && response.has_key?("forbidden")
         response
       else
