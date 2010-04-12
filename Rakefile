@@ -18,12 +18,12 @@ else
   task "couchdb-ruby.gemspec" do
     spec = Gem::Specification.new do |s|
       s.name            = "couchdb-ruby"
-      s.version         = "0.2.0"
+      s.version         = "0.8.0"
       s.platform        = Gem::Platform::RUBY
       s.summary         = "a Ruby interpreter for the CouchDB Query server."
       
       s.description     = <<-EOF
-A Ruby version of the CouchDB query server. Allows you to write your map/reduce and other functions in ruby instead of javascript or erlang.
+A Ruby version of the CouchDB query server. Allows you to write your map, reduce and other functions in ruby.
       EOF
 
       s.files           = `git ls-files`.split("\n")
