@@ -4,18 +4,16 @@ module CouchDB
 
     extend self
     
-    def documents
-      @design_documents ||= {}
-    end
-    
+    DOCUMENTS = {}
+
     def handle(command=[])
       case cmd = command.shift
       when 'new'
         id, ddoc = command[0], command[1]
-        documents[id] = ddoc
+        DOCUMENTS[id] = ddoc
         true
       else
-        doc = documents[cmd]
+        doc = DOCUMENTS[cmd]
         action, name = command.shift
         func = name ? doc[action][name] : doc[action]
         func = Sandbox.make_proc(func)

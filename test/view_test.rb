@@ -9,8 +9,8 @@ context "adding map functions" do
   test "compiles functions correctly" do
     response = CouchDB.run(["add_fun", "lambda {|doc| emit(nil, nil)}"])
     assert_equal true, response
-    assert_equal 1, CouchDB::View.map_functions.size
-    assert_kind_of Proc, CouchDB::View.map_functions.first
+    assert_equal 1, CouchDB::View::FUNCTIONS.size
+    assert_kind_of Proc, CouchDB::View::FUNCTIONS.first
   end
   
   test "errors on non-valid source" do
