@@ -65,14 +65,6 @@ module CouchDB
       end
     end
     
-    def throw(err, *message)
-      if [:error, :fatal, "error", "fatal"].include?(err)
-        ["error", message].flatten
-      else
-        {err.to_s => message.join(', ')}
-      end
-    end
-    
     class ListRenderer < CouchDB::Runner
       
       def run(head_and_req)
